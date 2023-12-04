@@ -1,25 +1,32 @@
 import time
+import queue
+from manager import QueueClient
 from task import Task
 
-class Boss:
+class Boss(QueueClient):  
+    def __init__(self):
+        super().__init__() 
+
+    def submit_task(self, task_id, task_size):
+        # Crée une nouvelle tâche avec l'ID et la taille spécifiés
+        task = Task(task_id, task_size)  
+        # Ajoute la tâche à la file de tâches du client
+        self.tasks.put(task)  
+        print(f"Le Boss a ajouté la tache {task_id} à la file.")  
+
     def run(self):
-        i = 1
         while True:
-            # Création d'une nouvelle tâche avec l'itération actuelle comme argument
-            t = Task(i)  
-            # Ajout de la tâche à la file d'attente des tâches
-            self.tasks.put(t)  
-            # Pause de 4 secondes pour simuler le traitement d'une tâche
-            time.sleep(4)  
-
-            # Récupération du résultat de la tâche traitée
-            result = self.results.get()  
-
-            print("Le Boss a récupéré le résultat " + str(result[0]) + " en " + str(result[1]) + " secondes.")
-            i += 1
+            try:
+                # Récupère un résultat de la file de résultats
+                result_id, result_time = self.results.get_nowait()  
+                print(f"Le Boss a récupéré le résultat {result_id} en {result_time} secondes.")
+            except queue.Empty:
+                print("La file est vide.")  
+                # Pause de 5 secondes avant de vérifier à nouveau
+                time.sleep(5)  
+                continue
 
 if __name__ == "__main__":
-    b = Boss()
-    b.run()
-
-    
+    boss = Boss() 
+    boss.submit_task(0, 3000)  # Soumet une tâche avec l'ID 0 et une taille de 3000
+    boss.run()
