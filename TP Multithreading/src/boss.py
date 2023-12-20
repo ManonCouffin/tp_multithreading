@@ -28,5 +28,8 @@ class Boss(QueueClient):
 
 if __name__ == "__main__":
     boss = Boss() 
-    boss.submit_task(0, 3000)  # Soumet une tâche avec l'ID 0 et une taille de 3000
+    id = 0
+    while id != 31 :
+        boss.submit_task(id, 3000)  # Soumet une tâche avec l'ID 0 et une taille de 3000
+        id += 1
     boss.run()

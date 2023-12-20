@@ -5,11 +5,12 @@ import numpy as np
 # Définition de la classe Task
 class Task:
     # Constructeur de la classe, initialisation des attributs
-    def __init__(self, identifier, size = None):
+    def __init__(self, identifier, size = None, a = None, b=None):
         self.identifier = identifier  # Identifiant de la tâche
-        self.size = np.random.randint(300, 3_000)  # Taille aléatoire de la tâche
-        self.a = np.random.rand(self.size, self.size)  # Matrice aléatoire de taille (size x size)
-        self.b = np.random.rand(self.size)  # Vecteur aléatoire de taille size
+        self.size = size or np.random.randint(300, 3_000)  # Taille aléatoire de la tâche
+        
+        self.a = a or np.random.rand(self.size, self.size)  # Matrice aléatoire de taille (size x size)
+        self.b = b or np.random.rand(self.size)  # Vecteur aléatoire de taille size
         self.x = np.zeros((self.size))  # Vecteur résultant initialisé à zéros
         self.time = 0  # Temps de calcul initialisé à zéro
 
@@ -26,8 +27,8 @@ class Task:
             "size": self.size,
             "a": self.a.tolist(),
             "b": self.b.tolist(),
-            "x": self.x.tolist(),
-            "time": self.time,
+            "x": self.x.tolist(),  # Ajoutez cette ligne pour inclure le vecteur x
+            "time": self.time  # Ajoutez cette ligne pour inclure le temps
         }
         return json.dumps(data)
 
@@ -35,32 +36,23 @@ class Task:
     @classmethod
     def from_json(cls, text: str) -> "Task":
         data = json.loads(text)
-        task = cls(identifier=data["identifier"], size=data["size"])
-
-        task.a = np.array(data["a"])
-        task.b = np.array(data["b"])
+        task = cls(identifier=data["identifier"], size=data["size"], a=data["a"], b=data["b"])
         task.x = np.array(data["x"])
         task.time = data["time"]
         return task
 
-    # Méthode spéciale pour comparer deux instances de Task
-    def __eq__(self, other: "Task") -> bool:
-        if not isinstance(other, Task):
-            return False
-        # Vérifie l'égalité des attributs de base (identifier, size, time)
-        are_basic_attrs_equal = (
-            self.identifier == other.identifier and
-            self.size == other.size and
-            self.time == other.time
-        )
-
-        if not are_basic_attrs_equal:
-            return False
-
-        # Vérifie l'égalité des matrices et vecteurs avec np.array_equal
-        are_arrays_equal = (
-            np.array_equal(self.a, other.a) and
-            np.array_equal(self.b, other.b) and
-            np.array_equal(self.x, other.x)
-        )
-        return are_arrays_equal
+    def eq(self, t):
+        if isinstance(t, Task):
+            if np.array_equal(self.a, t.a) and np.array_equal(self.b, t.b):
+                return True
+        return False
+    
+if __name__ == "__main__":
+    print("test unitaire a==b (True)")
+    a = Task("000")
+    txt = a.to_json()
+    b = Task.from_json(txt)
+    print(a == b)
+    print("test unitaire a==c (False)")
+    c = Task("001")
+    print(a == c)

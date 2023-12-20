@@ -10,7 +10,6 @@ KEY = b"AiZa5Uavcoh3PiajvaeTee5z"  # keep it secret, keep it safe !
 
 class QueueManager(BaseManager):
     """This Manager holds a Queue and waits for clients to use it."""
-
     pass
 
 
